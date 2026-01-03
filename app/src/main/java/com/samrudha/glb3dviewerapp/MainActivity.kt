@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.samrudha.glb3dviewerapp.Design.mainUI
-import com.samrudha.glb3dviewerapp.MainViewModel.AppRepo
-import com.samrudha.glb3dviewerapp.MainViewModel.GLBModelViewer
+import com.samrudha.glb3dviewerapp.Repo.AppRepo
+import com.samrudha.glb3dviewerapp.Viewer.GLBModelViewer
 import com.samrudha.glb3dviewerapp.MainViewModel.MainViewModel
 import com.samrudha.glb3dviewerapp.ui.theme.GLB3DViewerAppTheme
 
@@ -49,22 +49,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GLB3DViewerAppTheme {
-        Greeting("Android")
     }
 }

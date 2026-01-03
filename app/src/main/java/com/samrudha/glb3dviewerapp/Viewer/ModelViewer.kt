@@ -1,4 +1,4 @@
-package com.samrudha.glb3dviewerapp.MainViewModel
+package com.samrudha.glb3dviewerapp.Viewer
 
 import android.content.Context
 import android.net.Uri

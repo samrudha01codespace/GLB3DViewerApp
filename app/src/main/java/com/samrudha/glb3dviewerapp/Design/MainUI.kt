@@ -1,11 +1,9 @@
 package com.samrudha.glb3dviewerapp.Design
 
 import android.net.Uri
-import android.util.Base64
 import android.view.SurfaceView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +21,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -56,29 +53,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import coil.compose.AsyncImage
 import com.samrudha.glb3dviewerapp.Database.ModelEntity
 import com.samrudha.glb3dviewerapp.MainViewModel.AuthState
-import com.samrudha.glb3dviewerapp.MainViewModel.GLBModelViewer
+import com.samrudha.glb3dviewerapp.Viewer.GLBModelViewer
 import com.samrudha.glb3dviewerapp.MainViewModel.MainViewModel
-import com.samrudha.glb3dviewerapp.R
-import com.samrudha.glb3dviewerapp.Roles
+import com.samrudha.glb3dviewerapp.MainViewModel.Roles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import kotlin.text.get
-import kotlin.text.toInt
 
 
 @Composable

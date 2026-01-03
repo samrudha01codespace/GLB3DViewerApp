@@ -2,7 +2,7 @@ package com.samrudha.glb3dviewerapp.Database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.samrudha.glb3dviewerapp.Roles
+import com.samrudha.glb3dviewerapp.MainViewModel.Roles
 
 @Entity
 data class Entity(

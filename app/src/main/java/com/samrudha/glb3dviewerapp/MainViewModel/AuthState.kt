@@ -1,7 +1,7 @@
 package com.samrudha.glb3dviewerapp.MainViewModel
 
 import com.samrudha.glb3dviewerapp.Database.Entity
-import com.samrudha.glb3dviewerapp.Roles
+import com.samrudha.glb3dviewerapp.MainViewModel.Roles
 
 sealed class AuthState {
     object Idle : AuthState()

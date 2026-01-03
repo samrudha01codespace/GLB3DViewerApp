@@ -5,7 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.samrudha.glb3dviewerapp.Roles
+import com.samrudha.glb3dviewerapp.MainViewModel.Roles
 
 @Dao
 interface DAO {

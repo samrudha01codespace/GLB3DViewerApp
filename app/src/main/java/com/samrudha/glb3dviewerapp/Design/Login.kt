@@ -57,7 +57,7 @@ import com.samrudha.glb3dviewerapp.MainViewModel.AuthState
 import com.samrudha.glb3dviewerapp.MainViewModel.CryptoManager
 import com.samrudha.glb3dviewerapp.MainViewModel.MainViewModel
 import com.samrudha.glb3dviewerapp.R
-import com.samrudha.glb3dviewerapp.Roles
+import com.samrudha.glb3dviewerapp.MainViewModel.Roles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
