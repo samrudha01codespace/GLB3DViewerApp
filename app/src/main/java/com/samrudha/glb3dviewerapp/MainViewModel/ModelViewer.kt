@@ -92,13 +92,13 @@ class GLBModelViewer(
 
         // Optimize for mobile quality
         view.renderQuality = view.renderQuality.apply {
-            hdrColorBuffer = View.QualityLevel.MEDIUM
+            hdrColorBuffer = View.QualityLevel.ULTRA
         }
 
         // Enable dynamic resolution for better performance
         view.dynamicResolutionOptions = view.dynamicResolutionOptions.apply {
             enabled = true
-            quality = View.QualityLevel.MEDIUM
+            quality = View.QualityLevel.ULTRA
         }
 
         // Enable MSAA
