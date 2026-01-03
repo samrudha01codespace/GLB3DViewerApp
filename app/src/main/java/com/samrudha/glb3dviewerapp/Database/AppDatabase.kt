@@ -3,7 +3,7 @@ package com.samrudha.glb3dviewerapp.Database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [Entity::class, ModelEntity::class], version = 1, exportSchema = false)
+@Database(entities = [Entity::class, ModelEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase: RoomDatabase(){
     abstract fun dao(): DAO
     abstract fun modelDao(): ModelDAO
@@ -17,7 +17,8 @@ abstract class AppDatabase: RoomDatabase(){
                     context.applicationContext,
                     AppDatabase::class.java,
                     "user_database"
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

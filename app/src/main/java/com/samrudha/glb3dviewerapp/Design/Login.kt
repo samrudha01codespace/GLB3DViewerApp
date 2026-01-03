@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.twotone.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -27,6 +29,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,9 +41,11 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.samrudha.glb3dviewerapp.Database.DAO
 import com.samrudha.glb3dviewerapp.Database.Entity
+import com.samrudha.glb3dviewerapp.MainViewModel.AuthState
 import com.samrudha.glb3dviewerapp.MainViewModel.CryptoManager
 import com.samrudha.glb3dviewerapp.MainViewModel.MainViewModel
 import com.samrudha.glb3dviewerapp.R
@@ -50,18 +55,24 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun AuthScreen(mainViewModel: MainViewModel, context: Context) {
-    val cryptoManager = CryptoManager
+fun AuthScreen(
+    viewModel: MainViewModel,
+    error: String? = null,
+    modifier: Modifier = Modifier
+) {
     var isLoginMode by remember { mutableStateOf(true) }
-    val email = remember { mutableStateOf("") }
-    val pass = remember { mutableStateOf("") }
-    val selection = remember { mutableStateOf(Roles.USER) }
-    val encrypted = cryptoManager.encrypt(pass.value)
-    val decrypted = cryptoManager.decrypt(pass.value)
-    val coroutineScope = rememberCoroutineScope()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var selectedRole by remember { mutableStateOf(Roles.USER) }
+
+    val authState by viewModel.authState.collectAsState()
+
+    val cryptoManager = CryptoManager
+    val encryptedPassword = cryptoManager.encrypt(password)
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -84,37 +95,61 @@ fun AuthScreen(mainViewModel: MainViewModel, context: Context) {
             )
         ) {
             Column(
-                Modifier.fillMaxWidth(),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Role Selection
                 Row {
                     FilterChip(
-                        selected = selection.value == Roles.USER,
-                        onClick = { selection.value = Roles.USER },
+                        selected = selectedRole == Roles.USER,
+                        onClick = { selectedRole = Roles.USER },
                         modifier = Modifier.padding(10.dp),
                         label = { Text("USER") },
-                        leadingIcon = { Icon(Icons.TwoTone.Person, null) },
+                        leadingIcon = { Icon(Icons.TwoTone.Person, null) }
                     )
                     FilterChip(
-                        selected = selection.value == Roles.ADMIN,
-                        onClick = { selection.value = Roles.ADMIN },
+                        selected = selectedRole == Roles.ADMIN,
+                        onClick = { selectedRole = Roles.ADMIN },
                         modifier = Modifier.padding(10.dp),
                         label = { Text("ADMIN") },
-                        leadingIcon = {Icon(Icons.TwoTone.Lock, null) },
+                        leadingIcon = { Icon(Icons.TwoTone.Lock, null) }
                     )
                 }
 
+                // Name field (only for registration)
+                if (!isLoginMode) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        singleLine = true,
+                        label = { Text("Name") },
+                        leadingIcon = { Icon(Icons.TwoTone.Person, "") },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = DarkTheme().copy(alpha = 0.65f),
+                            unfocusedContainerColor = DarkTheme().copy(alpha = 0.65f),
+                            focusedBorderColor = DarkTheme_text().copy(alpha = 0.65f),
+                            unfocusedBorderColor = DarkTheme_text().copy(alpha = 0.65f),
+                            focusedLabelColor = DarkTheme_text().copy(alpha = 0.65f),
+                            unfocusedLabelColor = DarkTheme_text().copy(alpha = 0.65f)
+                        )
+                    )
+                }
+
+                // Email field
                 OutlinedTextField(
-                    value = email.value,
-                    onValueChange = { email.value = it },
+                    value = email,
+                    onValueChange = { email = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
                     singleLine = true,
-                    label = { Text(text = "Email") },
-                    leadingIcon = {
-                        Icon(Icons.TwoTone.Email, "")
-                    },
+                    label = { Text("Email") },
+                    leadingIcon = { Icon(Icons.TwoTone.Email, "") },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = DarkTheme().copy(alpha = 0.65f),
                         unfocusedContainerColor = DarkTheme().copy(alpha = 0.65f),
@@ -125,16 +160,17 @@ fun AuthScreen(mainViewModel: MainViewModel, context: Context) {
                     )
                 )
 
+                // Password field
                 OutlinedTextField(
-                    value = pass.value,
-                    onValueChange = { pass.value = it },
+                    value = password,
+                    onValueChange = { password = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    label = { Text(text = "Password") },
-                    leadingIcon = {
-                        Icon(Icons.TwoTone.Lock, "")
-                    },
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    singleLine = true,
+                    label = { Text("Password") },
+                    leadingIcon = { Icon(Icons.TwoTone.Lock, "") },
+                    visualTransformation = PasswordVisualTransformation(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = DarkTheme().copy(alpha = 0.65f),
                         unfocusedContainerColor = DarkTheme().copy(alpha = 0.65f),
@@ -145,68 +181,100 @@ fun AuthScreen(mainViewModel: MainViewModel, context: Context) {
                     )
                 )
 
+                // Error message
+                if (authState is AuthState.Error) {
+                    Text(
+                        text = (authState as AuthState.Error).message,
+                        color = Color.Red,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+
+                if (error != null) {
+                    Text(
+                        text = error,
+                        color = Color.Red,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+
+                // Forgot Password (only in login mode)
                 if (isLoginMode) {
                     TextButton(
-                        onClick = { /*TODO*/ },
+                        onClick = { /* TODO */ },
                         modifier = Modifier
                             .padding(5.dp)
                             .align(Alignment.Start)
                     ) {
-                        Text(text = "Forgot Password?", color = DarkTheme_text())
+                        Text("Forgot Password?", color = DarkTheme_text())
                     }
                 }
 
+                // Login/Register Button
                 Button(
                     onClick = {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            if (isLoginMode) {
-                                val user = mainViewModel.login(
-                                    selection.value,
-                                    email.value,
-                                    decrypted
+                        if (isLoginMode) {
+
+                            // Login
+                            viewModel.login(selectedRole, email, password)
+                        } else {
+                            // Register
+
+
+                            viewModel.register(
+                                Entity(
+                                    email = email,
+                                    password = cryptoManager.hash(password),
+                                    role = selectedRole
                                 )
-                                withContext(Dispatchers.Main) {
-                                    if (user != null) {
-                                        Toast.makeText(context, "Login Success", Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            } else {
-                                mainViewModel.register(
-                                    Entity(
-                                        email = email.value,
-                                        password = encrypted,
-                                        role = selection.value
-                                    )
-                                )
-                                withContext(Dispatchers.Main) {
-                                    isLoginMode = true
-                                    Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
-                                }
-                            }
+                            )
                         }
                     },
-                    modifier = Modifier.padding(5.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    enabled = authState !is AuthState.Loading &&
+                            email.isNotEmpty() &&
+                            password.isNotEmpty() &&
+                            (!isLoginMode.not() || name.isNotEmpty())
                 ) {
-                    Text(
-                        text = if (isLoginMode) "Login" else "Sign Up",
-                        modifier = Modifier.padding(5.dp)
-                    )
+                    if (authState is AuthState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White
+                        )
+                    } else {
+                        Text(
+                            text = if (isLoginMode) "Login" else "Sign Up",
+                            modifier = Modifier.padding(5.dp)
+                        )
+                    }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // Toggle between Login/Register
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(8.dp)
+                ) {
                     Text(
-                        text = if (isLoginMode) "Don't have an account?" else "Have an account?"
+                        text = if (isLoginMode) "Don't have an account?" else "Have an account?",
+                        color = DarkTheme_text()
                     )
                     TextButton(
-                        onClick = { isLoginMode = !isLoginMode },
+                        onClick = {
+                            isLoginMode = !isLoginMode
+                            // Clear fields when switching
+                            email = ""
+                            password = ""
+                            name = ""
+                        },
                         modifier = Modifier.padding(5.dp)
                     ) {
-                        Text(text = if (isLoginMode) "Sign Up" else "Login")
+                        Text(if (isLoginMode) "Sign Up" else "Login")
                     }
                 }
             }
         }
     }
 }
+

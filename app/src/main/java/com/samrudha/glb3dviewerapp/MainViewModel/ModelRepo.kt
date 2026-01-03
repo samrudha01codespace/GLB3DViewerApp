@@ -17,16 +17,19 @@ class AppRepo(context: Context) {
     suspend fun login(roles: Roles, email: String, password: String): Result<Entity> =
         withContext(Dispatchers.IO) {
             try {
-                val user = dao.loginUser(roles, email, password)
-                if (user != null) {
-                    Result.success(user)
-                } else {
-                    Result.failure(Exception("Invalid credentials"))
-                }
+                val hashedPassword = CryptoManager.hash(password)  // ✅ Hash input password
+
+                val user = dao.login(roles, email, hashedPassword)
+
+                user?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Invalid credentials"))
             } catch (e: Exception) {
                 Result.failure(e)
             }
         }
+
+
+
 
     suspend fun register(entity: Entity): Result<Unit> =
         withContext(Dispatchers.IO) {
@@ -47,7 +50,7 @@ class AppRepo(context: Context) {
         )
     }
 
-    fun getAllModels(): List<ModelEntity> {
+    suspend fun getAllModels(): List<ModelEntity> {
         return modelDao.getAllModels()
     }
 

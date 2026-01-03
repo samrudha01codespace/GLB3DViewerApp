@@ -12,8 +12,9 @@ interface DAO {
     @Insert
     fun registerData(user: Entity)
 
-    @Query("SELECT * FROM Entity WHERE email = :email AND password = :password AND role = :roles LIMIT 1")
-    fun loginUser(roles: Roles,email: String, password: String): Entity?
+    @Query("SELECT * FROM entity WHERE role = :roles AND email = :email AND password = :password LIMIT 1")
+    suspend fun login(roles: Roles, email: String, password: String): Entity?
+
 }
 
 @Dao
@@ -28,5 +29,5 @@ interface ModelDAO {
     suspend fun updateModelData(modelEntity: ModelEntity)
 
     @Query("SELECT * FROM ModelEntity")
-    fun getAllModels(): List<ModelEntity>
+    suspend fun getAllModels(): List<ModelEntity>
 }

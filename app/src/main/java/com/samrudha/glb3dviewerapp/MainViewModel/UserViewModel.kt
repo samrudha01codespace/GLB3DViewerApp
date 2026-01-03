@@ -1,5 +1,8 @@
 package com.samrudha.glb3dviewerapp.MainViewModel
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Dao
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class MainViewModel(
     private val appRepo: AppRepo,
@@ -22,17 +26,58 @@ class MainViewModel(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    private var _loginStatus = Roles.USER
+    private var _loginStatus = MutableStateFlow<Roles>(Roles.USER)
     var loginStatus = _loginStatus
 
     fun setLoginStatus(isLoggedIn: Roles): Roles {
-        loginStatus = isLoggedIn
+        loginStatus.value = isLoggedIn
 
-        return loginStatus
+        return loginStatus.value
     }
 
+    private val _models = MutableStateFlow<List<ModelEntity>>(emptyList())
+    val models: StateFlow<List<ModelEntity>> = _models.asStateFlow()
+
     fun getLoginStatus(isLoggedIn: Roles): Roles {
-        return loginStatus
+        return loginStatus.value
+    }
+
+    init {
+        // Load models when ViewModel is created
+        loadModels()
+    }
+
+    private fun loadModels() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _models.value = appRepo.getAllModels()
+        }
+    }
+
+    // Helper Functions
+    fun getFileName(context: Context, uri: Uri): String {
+        var name = "model.glb"
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (cursor.moveToFirst() && nameIndex != -1) {
+                name = cursor.getString(nameIndex)
+            }
+        }
+        return name
+    }
+
+    fun saveFileToInternalStorage(context: Context, uri: Uri, fileName: String): String {
+        val modelsDir = File(context.filesDir, "models")
+        if (!modelsDir.exists()) modelsDir.mkdirs()
+
+        val file = File(modelsDir, "${System.currentTimeMillis()}_${fileName}")
+
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            file.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        return file.absolutePath
     }
 
     fun login(roles: Roles, email: String, password: String) {
@@ -62,21 +107,27 @@ class MainViewModel(
     fun addModels(fileName: String, filePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
             appRepo.addModels(fileName, filePath)
+            loadModels()
         }
     }
-    fun getAllModels(): List<ModelEntity> {
+    suspend fun getAllModels(): List<ModelEntity> {
         return appRepo.getAllModels()
     }
     fun deleteModel(modelEntity: ModelEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             appRepo.deleteModel(modelEntity)
+            loadModels()
         }
     }
     fun updateModel(modelEntity: ModelEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             appRepo.updateModel(modelEntity)
+            loadModels()
         }
     }
+
+
+
 
 
 }
