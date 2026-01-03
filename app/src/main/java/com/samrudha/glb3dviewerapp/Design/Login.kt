@@ -160,13 +160,11 @@ fun AuthScreen(mainViewModel: MainViewModel, context: Context) {
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
                             if (isLoginMode) {
-                                val user = dao.loginUser(
+                                val user = mainViewModel.login(
                                     selection.value,
                                     email.value,
                                     decrypted
                                 )
-
-                                mainViewModel.loginModel()
                                 withContext(Dispatchers.Main) {
                                     if (user != null) {
                                         Toast.makeText(context, "Login Success", Toast.LENGTH_SHORT).show()
@@ -175,7 +173,7 @@ fun AuthScreen(mainViewModel: MainViewModel, context: Context) {
                                     }
                                 }
                             } else {
-                                dao.registerData(
+                                mainViewModel.register(
                                     Entity(
                                         email = email.value,
                                         password = encrypted,
