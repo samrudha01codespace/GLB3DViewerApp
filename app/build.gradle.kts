@@ -59,6 +59,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    implementation("dev.chrisbanes.haze:haze:0.7.2")
+    implementation("dev.chrisbanes.haze:haze-materials:0.7.2")
+
     //filament
     implementation("com.google.android.filament:filament-android:1.68.2")
     implementation("com.google.android.filament:gltfio-android:1.68.2")

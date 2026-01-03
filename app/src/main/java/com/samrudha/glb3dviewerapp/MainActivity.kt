@@ -25,6 +25,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.samrudha.glb3dviewerapp.Database.AppDatabase
+import com.samrudha.glb3dviewerapp.Database.DAO
+import com.samrudha.glb3dviewerapp.Design.AuthScreen
+import com.samrudha.glb3dviewerapp.Design.mainUI
+
 import com.samrudha.glb3dviewerapp.MainViewModel.GLBModelViewer
 import com.samrudha.glb3dviewerapp.ui.theme.GLB3DViewerAppTheme
 
@@ -33,6 +38,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val database = AppDatabase.getInstance(applicationContext)
+        val dao: DAO = database.dao()
         setContent {
             GLB3DViewerAppTheme {
                 var lightIntensity by remember { mutableFloatStateOf(100000f) }
@@ -42,59 +50,17 @@ class MainActivity : ComponentActivity() {
                     GLBModelViewer(this, lifecycleOwner)
                 }
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column(modifier = Modifier.padding(innerPadding)) {
-                        ModelViewerScreen("sample.glb", glbViewer,lightIntensity, modifier = Modifier.wrapContentSize())
-
-                        Text(
-                            text = "Light Intensity: ${(lightIntensity / 1000).toInt()}K",
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                        Slider(
-                            value = lightIntensity,
-                            onValueChange = { newValue ->
-                                lightIntensity = newValue
-                                glbViewer.setupLighting(
-                                    intensity = newValue,
-                                    colorTemperature = 6500,
-                                    directionX = -0.5f,
-                                    directionY = -1f,
-                                    directionZ = -0.5f
-                                )
-                            },
-                            valueRange = 10000f..200000f, // Range from dim to very bright
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
-                    }
+                    mainUI(
+                        glbViewer = glbViewer,
+                        lightIntensity = lightIntensity,
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                    )
                 }
             }
         }
     }
-}
-
-@Composable
-fun ModelViewerScreen(modelPath: String, glbViewer: GLBModelViewer,lightIntensity: Float,modifier: Modifier = Modifier) {
-
-    AndroidView(
-        factory = { ctx ->
-            SurfaceView(ctx).also { surfaceView ->
-                glbViewer.initialize(surfaceView)
-                glbViewer.loadModelFromAssets(modelPath)
-
-                // Setup custom lighting
-                glbViewer.setupLighting(
-                    intensity = lightIntensity,     // Brightness (higher = brighter)
-                    colorTemperature = 6500, // 2700=warm, 6500=daylight, 9000=cool
-                    directionX = -0.5f,
-                    directionY = -1f,
-                    directionZ = -0.5f
-                )
-            }
-
-        },
-        modifier = modifier
-    )
 }
 
 
