@@ -80,6 +80,15 @@ class GLBModelViewer(
 
     private fun setupViewSettings() {
         val view = modelViewer?.view ?: return
+        val viewer = modelViewer ?: return
+
+        // ✅ Set dark gray/black background for the renderer
+        viewer.renderer.setClearOptions(
+            viewer.renderer.clearOptions.apply {
+                clearColor = floatArrayOf(0.0f, 0.0f, 0.0f, 0.5f)
+                clear = true
+            }
+        )
 
         // Optimize for mobile quality
         view.renderQuality = view.renderQuality.apply {

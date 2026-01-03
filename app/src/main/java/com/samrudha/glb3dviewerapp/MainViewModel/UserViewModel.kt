@@ -1,6 +1,7 @@
 package com.samrudha.glb3dviewerapp.MainViewModel
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
@@ -42,9 +43,12 @@ class MainViewModel(
         return loginStatus.value
     }
 
+    private val _isAutoLoggingIn = MutableStateFlow(false)
+    val isAutoLoggingIn: StateFlow<Boolean> = _isAutoLoggingIn.asStateFlow()
+
     init {
-        // Load models when ViewModel is created
         loadModels()
+        checkAutoLogin() // ✅ Check for saved credentials
     }
 
     private fun loadModels() {
@@ -80,12 +84,46 @@ class MainViewModel(
         return file.absolutePath
     }
 
+    private fun checkAutoLogin() {
+        viewModelScope.launch {
+            _isAutoLoggingIn.value = true
+
+            val savedEmail = appRepo.getLoggedInUserEmail()
+            val savedPassword = appRepo.getPass()
+            val savedRole = appRepo.getRole()
+
+            if (savedEmail != null && savedPassword != null && savedRole != null) {
+                // Auto-login with saved credentials
+                _authState.value = AuthState.Loading
+                val result = appRepo.login(savedRole, savedEmail, CryptoManager.hash(savedPassword))
+                _authState.value = result.fold(
+                    onSuccess = { user ->
+                        _loginStatus.value = savedRole
+                        AuthState.Success(user, savedRole)
+                    },
+                    onFailure = {
+                        // Clear invalid credentials
+                        appRepo.clearAllPreferences()
+                        AuthState.Idle
+                    }
+                )
+            }
+
+            _isAutoLoggingIn.value = false
+        }
+    }
+
     fun login(roles: Roles, email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             val result = appRepo.login(roles, email, password)
             _authState.value = result.fold(
                 onSuccess = { user ->
+                    // ✅ Save credentials for auto-login
+                    appRepo.setLoggedInUserEmail(email)
+                    appRepo.setPass(CryptoManager.hash(password))
+                    appRepo.setRole(roles)
+                    _loginStatus.value = roles
                     AuthState.Success(user, roles)
                 },
                 onFailure = { error -> AuthState.Error(error.message ?: "Unknown Error") }
@@ -101,6 +139,15 @@ class MainViewModel(
                 onSuccess = { AuthState.Idle },
                 onFailure = { error -> AuthState.Error(error.message ?: "Unknown Error") }
             )
+        }
+    }
+
+    // ✅ Add logout function
+    fun logout() {
+        viewModelScope.launch {
+            appRepo.clearAllPreferences()
+            _authState.value = AuthState.Idle
+            _loginStatus.value = Roles.USER
         }
     }
 
@@ -125,9 +172,5 @@ class MainViewModel(
             loadModels()
         }
     }
-
-
-
-
 
 }

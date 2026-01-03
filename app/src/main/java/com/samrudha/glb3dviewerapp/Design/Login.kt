@@ -1,8 +1,10 @@
 package com.samrudha.glb3dviewerapp.Design
 
 import android.content.Context
+import android.graphics.drawable.Icon
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,12 +20,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Email
 import androidx.compose.material.icons.twotone.Lock
 import androidx.compose.material.icons.twotone.Person
+import androidx.compose.material.icons.twotone.Visibility
+import androidx.compose.material.icons.twotone.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -38,10 +44,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.samrudha.glb3dviewerapp.Database.DAO
 import com.samrudha.glb3dviewerapp.Database.Entity
@@ -71,6 +79,8 @@ fun AuthScreen(
     val cryptoManager = CryptoManager
     val encryptedPassword = cryptoManager.encrypt(password)
 
+    val mask = remember { mutableStateOf(true) }
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -81,6 +91,21 @@ fun AuthScreen(
             modifier = Modifier.fillMaxSize(),
             alignment = Alignment.Center,
             contentScale = ContentScale.Crop
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.8f),  // Dark at bottom
+                            Color.Transparent                 // Transparent at top
+                        ),
+                        startY = Float.POSITIVE_INFINITY,
+                        endY = 0f
+                    )
+                )
         )
 
         Card(
@@ -170,7 +195,16 @@ fun AuthScreen(
                     singleLine = true,
                     label = { Text("Password") },
                     leadingIcon = { Icon(Icons.TwoTone.Lock, "") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        androidx.compose.material3.IconButton(
+                            onClick = { mask.value = !mask.value },
+                            enabled = authState !is AuthState.Loading &&
+                                    password.isNotEmpty()
+                        ) {
+                             if (mask.value) Icon(Icons.TwoTone.Visibility,"") else Icon(Icons.TwoTone.VisibilityOff,"")
+                        }
+                    },
+                    visualTransformation = if(mask.value) PasswordVisualTransformation() else VisualTransformation.None,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = DarkTheme().copy(alpha = 0.65f),
                         unfocusedContainerColor = DarkTheme().copy(alpha = 0.65f),
@@ -198,18 +232,6 @@ fun AuthScreen(
                     )
                 }
 
-                // Forgot Password (only in login mode)
-                if (isLoginMode) {
-                    TextButton(
-                        onClick = { /* TODO */ },
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .align(Alignment.Start)
-                    ) {
-                        Text("Forgot Password?", color = DarkTheme_text())
-                    }
-                }
-
                 // Login/Register Button
                 Button(
                     onClick = {
@@ -217,10 +239,9 @@ fun AuthScreen(
 
                             // Login
                             viewModel.login(selectedRole, email, password)
+
                         } else {
                             // Register
-
-
                             viewModel.register(
                                 Entity(
                                     email = email,
@@ -228,6 +249,7 @@ fun AuthScreen(
                                     role = selectedRole
                                 )
                             )
+
                         }
                     },
                     modifier = Modifier

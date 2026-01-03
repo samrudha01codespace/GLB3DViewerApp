@@ -3,7 +3,7 @@ package com.samrudha.glb3dviewerapp.Database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [Entity::class, ModelEntity::class], version = 2, exportSchema = false)
+@Database(entities = [Entity::class, ModelEntity::class], version = 3, exportSchema = false)
 abstract class AppDatabase: RoomDatabase(){
     abstract fun dao(): DAO
     abstract fun modelDao(): ModelDAO

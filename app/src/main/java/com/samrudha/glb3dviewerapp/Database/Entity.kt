@@ -18,5 +18,6 @@ data class ModelEntity(
     @PrimaryKey(autoGenerate = true)
     val id : Int? = null,
     val modelName: String,
-    val modelPath: String
+    val modelPath: String,
+    val thumbnailPath: String? = null
 )

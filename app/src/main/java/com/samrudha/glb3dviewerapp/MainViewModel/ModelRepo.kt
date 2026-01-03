@@ -14,6 +14,34 @@ class AppRepo(context: Context) {
     val modelDao = appDatabase.modelDao()
     val dao = appDatabase.dao()
 
+    val sharedPreferences = context.getSharedPreferences("APP_PREFERENCES", Context.MODE_PRIVATE)
+
+    fun getLoggedInUserEmail(): String? {
+        return sharedPreferences.getString("LOGGED_IN_USER_EMAIL", null)
+    }
+    fun setLoggedInUserEmail(email: String) {
+        sharedPreferences.edit().putString("LOGGED_IN_USER_EMAIL", email).apply()
+    }
+    fun clearLoggedInUserEmail() {
+        sharedPreferences.edit().remove("LOGGED_IN_USER_EMAIL").apply()
+    }
+    fun clearAllPreferences() {
+        sharedPreferences.edit().clear().apply()
+    }
+    fun setPass(password: String) {
+        sharedPreferences.edit().putString("PASSWORD", password).apply()
+    }
+    fun getPass(): String? {
+        return sharedPreferences.getString("PASSWORD", null)
+    }
+    fun setRole(role: Roles) {
+        sharedPreferences.edit().putString("ROLE", role.name).apply()
+    }
+    fun getRole(): Roles? {
+        val roleName = sharedPreferences.getString("ROLE", null)
+        return roleName?.let { Roles.valueOf(it) }
+    }
+
     suspend fun login(roles: Roles, email: String, password: String): Result<Entity> =
         withContext(Dispatchers.IO) {
             try {

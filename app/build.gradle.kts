@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.datastore.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -66,8 +67,11 @@ dependencies {
     implementation("com.google.android.filament:filament-android:1.68.2")
     implementation("com.google.android.filament:gltfio-android:1.68.2")
     implementation("com.google.android.filament:filament-utils-android:1.68.2")
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
 
     val room_version = "2.8.4"
+    implementation("androidx.compose.material:material-icons-extended-android:1.7.8")
 
     implementation("androidx.room:room-runtime:$room_version")
 
