@@ -85,10 +85,11 @@ class GLBModelViewer(
         // ✅ Set dark gray/black background for the renderer
         viewer.renderer.setClearOptions(
             viewer.renderer.clearOptions.apply {
-                clearColor = floatArrayOf(0.0f, 0.0f, 0.0f, 0.5f)
+                clearColor = floatArrayOf(0.1f, 0.1f, 0.1f, 1.0f) // Dark gray background
                 clear = true
             }
         )
+
 
         // Optimize for mobile quality
         view.renderQuality = view.renderQuality.apply {

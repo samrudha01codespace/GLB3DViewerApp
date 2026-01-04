@@ -172,6 +172,8 @@ fun manageModelsScreen(
     var lightDirectionY by remember { mutableFloatStateOf(-1f) }
     var lightDirectionZ by remember { mutableFloatStateOf(-0.5f) }
 
+    var modelToEdit by remember { mutableStateOf<ModelEntity?>(null) }
+
     androidx.activity.compose.BackHandler(enabled = selectedModel != null) {
         selectedModel = null
     }
@@ -199,6 +201,28 @@ fun manageModelsScreen(
         }
     }
 
+    val editFilePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            modelToEdit?.let { model ->
+                val fileName = mainViewModel.getFileName(context, it)
+                val filePath = mainViewModel.saveFileToInternalStorage(context, it, fileName)
+
+                coroutineScope.launch(Dispatchers.IO) {
+                    mainViewModel.updateModel(
+                        model.copy(
+                            modelName = fileName.substringBeforeLast('.'),
+                            modelPath = filePath
+                        )
+                    )
+                }
+            }
+        }
+        modelToEdit = null
+    }
+
+
 
     selectedModel?.let { model ->
         LaunchedEffect(sliderValue, lightDirectionX, lightDirectionY, lightDirectionZ) {
@@ -213,7 +237,7 @@ fun manageModelsScreen(
         }
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 60.dp,
+            sheetPeekHeight = 75.dp,
             sheetContainerColor = DarkTheme().copy(alpha = 0.5f),
             sheetContentColor = DarkTheme_text(),
             modifier = Modifier,
@@ -327,8 +351,9 @@ fun manageModelsScreen(
                 }
                 if (getModels.isEmpty()) {
                     Column(
-                        modifier = Modifier.wrapContentSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Text(text = "No Models Available")
 
@@ -416,8 +441,10 @@ fun manageModelsScreen(
                                                 DropdownMenuItem(
                                                     text = { Text("Edit") },
                                                     onClick = {
-                                                        // Add edit functionality
+                                                        modelToEdit = model
+                                                        editFilePicker.launch("*/*")
                                                         expanded = false
+
                                                     },
                                                     leadingIcon = {
                                                         Icon(Icons.Default.Edit, contentDescription = null)
