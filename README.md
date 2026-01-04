@@ -427,9 +427,9 @@ SOFTWARE.
 
 **Samrudha**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your Name](https://linkedin.com/in/yourprofile)
-- Email: your.email@example.com
+- GitHub: [@samrudha01codespace](https://github.com/samrudha01codespace)
+- LinkedIn: [Samrudha Kshirsagar](https://linkedin.com/in/samrudha-kshirsagar)
+- Email: samrudhakshirsagar@gmail.com
 
 ---
 
